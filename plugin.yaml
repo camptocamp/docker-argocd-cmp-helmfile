@@ -1,0 +1,12 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: helmfile
+spec:
+  version: v1.0
+  init:
+    command: [/usr/local/bin/argocd-helmfile, init]
+  generate:
+    command: [/usr/local/bin/argocd-helmfile, generate]
+  discover:
+    fileName: "helmfile.yaml"
