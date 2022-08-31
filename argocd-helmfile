@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## standard build environment
 ## https://argoproj.github.io/argo-cd/user-guide/build-environment/

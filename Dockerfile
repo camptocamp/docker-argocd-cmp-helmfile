@@ -17,6 +17,8 @@ RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.25.1/yq_linux_a
 
 FROM alpine:3.16.1
 
+RUN apk add --no-cache bash
+
 COPY --from=helm-dowloader /tmp/helm /usr/local/bin/_helm
 COPY --from=helm-sops-dowloader /tmp/helm-sops /usr/local/bin/helm
 COPY --from=helmfile-dowloader /tmp/helmfile /usr/local/bin/
