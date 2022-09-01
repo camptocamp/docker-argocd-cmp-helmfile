@@ -84,10 +84,10 @@ case $phase in
       HELM_VALUES_FILE="--values ${file} ${HELM_VALUES_FILE}"
     done
 
-    if [[ "${ADDITIONAL_VALUES}" ]] ; then
+    if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]] ; then
       echoerr "Detected additional values"
       tmpfile=$(mktemp /tmp/helmfile-additional-values-XXXXX)
-      echo "${ADDITIONAL_VALUES}" > $tmpfile
+      echo "${ARGOCD_ENV_ADDITIONAL_VALUES}" > $tmpfile
       HELM_VALUES_FILE="--values ${tmpfile} ${HELM_VALUES_FILE}"
     fi
 
@@ -97,7 +97,7 @@ case $phase in
       --args "${INTERNAL_HELM_TEMPLATE_OPTIONS}" \
       ${HELM_VALUES_FILE}
 
-    if [[ "${ADDITIONAL_VALUES}" ]] ; then
+    if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]] ; then
       rm -r $tmpfile
     fi
     ;;
