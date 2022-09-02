@@ -13,7 +13,9 @@
 # KUBE_VERSION="<major>.<minor>"
 # KUBE_API_VERSIONS="v1,apps/v1,..."
 
-set -e
+if [ "${ARGOCD_CMP_HELMFILE_DEBUG}" == "true" ] ; then
+  set -x
+fi
 
 echoerr() { printf "%s\n" "$*" >&2; }
 
