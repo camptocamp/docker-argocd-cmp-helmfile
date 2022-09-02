@@ -88,7 +88,7 @@ case $phase in
 
     if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]] ; then
       echoerr "Detected additional values"
-      tmpfile=$(mktemp /tmp/helmfile-additional-values-XXXXX)
+      tmpfile=$(mktemp /tmp/helmfile-additional-values-XXXXXX)
       echo "${ARGOCD_ENV_ADDITIONAL_VALUES}" > $tmpfile
       HELM_VALUES_FILE="--values ${tmpfile} ${HELM_VALUES_FILE}"
     fi
