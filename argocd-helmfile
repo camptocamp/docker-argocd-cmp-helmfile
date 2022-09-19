@@ -107,6 +107,7 @@ case $phase in
       --args "${INTERNAL_HELM_TEMPLATE_OPTIONS}" \
       ${HELM_VALUES_FILE}
 
+    cleanup
     ;;
 
   *)
