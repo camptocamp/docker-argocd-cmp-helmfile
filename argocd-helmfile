@@ -67,7 +67,7 @@ case $phase in
   "init")
     echoerr "starting init"
 
-    ${helm} dependency update
+    ${helmfile} deps
     ;;
 
   "generate")
