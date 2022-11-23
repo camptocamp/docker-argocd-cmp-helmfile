@@ -66,7 +66,7 @@ case $phase in
   "init")
     echoerr "starting init"
 
-    ${helmfile} deps
+    ${helmfile} fetch
     ;;
 
   "generate")
