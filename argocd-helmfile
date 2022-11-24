@@ -65,8 +65,10 @@ echoerr "$(${helmfile} --version)"
 case $phase in
   "init")
     echoerr "starting init"
-
-    ${helmfile} fetch
+    if [[ ! -d "./charts" ]]; then
+      echoerr "no charts directory found, doing helmfile fetch"
+      ${helmfile} fetch
+    fi
     ;;
 
   "generate")
