@@ -33,3 +33,15 @@ volumes:
 ```
 
 For more information please read the [official documentation](https://argo-cd.readthedocs.io/en/stable/user-guide/config-management-plugins/#option-2-configure-plugin-via-sidecar)
+
+
+## How it works :
+
+The plugin will detect any applications with a helmfile.yaml file inside and run the argocd-helmfile script to generate the YAML.
+ - init phase :
+   - if a charts/ folder exists it will **only** use the charts inside.
+   - else it will launch helmfile fetch to download the remote charts defined in the dependencies sections of the Chart.yaml (and respecting the constraints of the Chart.lock). Since the fetch uses the helm dependency build subcommand you have to define all your remote repositories in the helmfile.yaml.
+  
+ - generate phase :
+   - the plugin will parse the first release in the helmfile.yaml for secrets and the values in the ARGOCD_ENV_ADDITIONAL_VALUES envvar if it exists and pass them as arguments for helm.
+   - launch helmfile template with the params above.
