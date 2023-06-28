@@ -91,15 +91,11 @@ case $phase in
       INTERNAL_HELM_TEMPLATE_OPTIONS="${INTERNAL_HELM_TEMPLATE_OPTIONS} ${INTERNAL_HELM_API_VERSIONS}"
     fi
 
-    for file in $(yq '.releases[0].values[]' helmfile.yaml) ; do
-      HELM_VALUES_FILE="--values ${file} ${HELM_VALUES_FILE}"
-    done
-
     if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]] ; then
       echoerr "Detected additional values"
       tmpfile=$(mktemp /tmp/helmfile-additional-values-XXXXXX)
       echo "${ARGOCD_ENV_ADDITIONAL_VALUES}" > $tmpfile
-      HELM_VALUES_FILE="--values ${tmpfile} ${HELM_VALUES_FILE}"
+      HELM_VALUES_FILE="--values ${tmpfile}"
     fi
 
     ${helmfile} \
