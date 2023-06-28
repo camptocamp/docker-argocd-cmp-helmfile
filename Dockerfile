@@ -3,7 +3,7 @@ RUN curl -L https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz | tar -xzf - -C 
     chmod +x /tmp/helm
 
 FROM curlimages/curl:latest as helm-sops-dowloader
-RUN curl -L https://github.com/camptocamp/helm-sops/releases/download/20230601-1/helm-sops_20230601-1_linux_amd64.tar.gz | tar -xzf - -C /tmp && \
+RUN curl -L https://github.com/camptocamp/helm-sops/releases/download/20230623-1/helm-sops_20230623-1_linux_amd64.tar.gz | tar -xzf - -C /tmp && \
     chmod +x /tmp/helm-sops
 
 FROM curlimages/curl:latest as helmfile-dowloader
