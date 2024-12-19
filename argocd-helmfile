@@ -13,100 +13,59 @@
 
 set -e
 
-if [ "${ARGOCD_CMP_HELMFILE_DEBUG}" == "true" ] ; then
-  set -x
-fi
+[[ "${ARGOCD_CMP_HELMFILE_DEBUG}" == "true" ]] && set -x
 
+tmpfile=""
 cleanup() {
-  if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]] ; then
-    rm -r $tmpfile
-  fi
+  [[ -n "${tmpfile}" && -f "${tmpfile}" ]] && rm -r "${tmpfile}"
 }
-
-trap "cleanup" ERR
+trap "cleanup" EXIT
 
 echoerr() { printf "%s\n" "$*" >&2; }
 
-# exit immediately if no phase is passed in
-if [[ -z "${1}" ]]; then
-  echoerr "invalid invocation"
-  exit 1
-fi
-
-SCRIPT_NAME=$(basename "${0}")
-
+[[ -z "${1}" ]] && echoerr "invalid invocation" && exit 1
 phase=$1
 
-# setup the env
-helm="$(which helm)"
-helmfile="$(which helmfile)"
+helm=$(command -v helm)
+helmfile=$(command -v helmfile)
 helmfile="${helmfile} --helm-binary ${helm} --no-color --allow-no-matching-release"
 
-if [[ "${ARGOCD_APP_NAMESPACE}" ]]; then
-  helmfile="${helmfile} --namespace ${ARGOCD_APP_NAMESPACE}"
-fi
+[[ "${ARGOCD_APP_NAMESPACE}" ]] && helmfile+=" --namespace ${ARGOCD_APP_NAMESPACE}"
+[[ "${HELMFILE_GLOBAL_OPTIONS}" ]] && helmfile+=" ${HELMFILE_GLOBAL_OPTIONS}"
 
-if [[ "${HELMFILE_GLOBAL_OPTIONS}" ]]; then
-  helmfile="${helmfile} ${HELMFILE_GLOBAL_OPTIONS}"
-fi
+helm_version=$(${helm} version --short --client)
+helm_major_version=$(echo "${helm_version%+*}" | cut -d "." -f1 | sed 's/[^0-9]//g')
+helm_minor_version=$(echo "${helm_version%+*}" | cut -d "." -f2 | sed 's/[^0-9]//g')
 
-# these should work for both v2 and v3
-helm_full_version=$(${helm} version --short --client | cut -d " " -f2)
-helm_major_version=$(echo "${helm_full_version%+*}" | cut -d "." -f1 | sed 's/[^0-9]//g')
-helm_minor_version=$(echo "${helm_full_version%+*}" | cut -d "." -f2 | sed 's/[^0-9]//g')
-
-# fix scenarios where KUBE_VERSION is improperly set with trailing +
-# https://github.com/argoproj/argo-cd/issues/8249
 KUBE_VERSION=$(echo "${KUBE_VERSION}" | sed 's/[^0-9\.]*//g')
-
-echoerr "$(${helm} version --short --client)"
-echoerr "$(${helmfile} --version)"
 
 case $phase in
   "init")
-    echoerr "starting init"
-    if [[ ! -d "./charts" ]]; then
-      echoerr "no charts directory found, doing helmfile fetch"
-      ${helmfile} fetch
-    fi
+    [[ ! -d "./charts" ]] && echoerr "no charts directory found, fetching..." && ${helmfile} fetch
     ;;
-
   "generate")
-    echoerr "starting generate"
-
-    INTERNAL_HELM_TEMPLATE_OPTIONS=
-    HELM_VALUES_FILE=
-
-    # support added for --kube-version in 3.6
-    # https://github.com/helm/helm/pull/9040
-    if [[ ${helm_major_version} -eq 3 && ${helm_minor_version} -ge 6 && "${KUBE_VERSION}" ]]; then
-      INTERNAL_HELM_TEMPLATE_OPTIONS="${INTERNAL_HELM_TEMPLATE_OPTIONS} --kube-version=${KUBE_VERSION}"
+    INTERNAL_HELM_TEMPLATE_OPTIONS=""
+    HELM_VALUES_FILE=""
+    
+    if [[ ${helm_major_version} -eq 3 && ${helm_minor_version} -ge 6 && -n "${KUBE_VERSION}" ]]; then
+      INTERNAL_HELM_TEMPLATE_OPTIONS+=" --kube-version=${KUBE_VERSION}"
     fi
 
-    if [[ ${helm_major_version} -eq 3 && "${KUBE_API_VERSIONS}" ]]; then
-      INTERNAL_HELM_API_VERSIONS=""
-      for v in ${KUBE_API_VERSIONS//,/ }; do
-        INTERNAL_HELM_API_VERSIONS="${INTERNAL_HELM_API_VERSIONS} --api-versions=$v"
+    if [[ ${helm_major_version} -eq 3 && -n "${KUBE_API_VERSIONS}" ]]; then
+      IFS=',' read -ra api_versions <<< "${KUBE_API_VERSIONS}"
+      for v in "${api_versions[@]}"; do
+        INTERNAL_HELM_TEMPLATE_OPTIONS+=" --api-versions=$v"
       done
-      INTERNAL_HELM_TEMPLATE_OPTIONS="${INTERNAL_HELM_TEMPLATE_OPTIONS} ${INTERNAL_HELM_API_VERSIONS}"
     fi
 
-    if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]] ; then
-      echoerr "Detected additional values"
+    if [[ "${ARGOCD_ENV_ADDITIONAL_VALUES}" ]]; then
       tmpfile=$(mktemp /tmp/helmfile-additional-values-XXXXXX)
-      echo "${ARGOCD_ENV_ADDITIONAL_VALUES}" > $tmpfile
+      echo "${ARGOCD_ENV_ADDITIONAL_VALUES}" > "${tmpfile}"
       HELM_VALUES_FILE="--values ${tmpfile}"
     fi
 
-    ${helmfile} \
-      template \
-      --skip-deps \
-      --args "${INTERNAL_HELM_TEMPLATE_OPTIONS}" \
-      ${HELM_VALUES_FILE}
-
-    cleanup
+    ${helmfile} template --skip-deps --args "${INTERNAL_HELM_TEMPLATE_OPTIONS}" ${HELM_VALUES_FILE}
     ;;
-
   *)
     echoerr "invalid invocation"
     exit 1
