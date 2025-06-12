@@ -1,9 +1,9 @@
 FROM curlimages/curl:latest as build
-RUN curl -L https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz | tar -xzf - -C /tmp && mv /tmp/linux-amd64/helm /tmp && \
+RUN curl -L https://get.helm.sh/helm-v3.18.2-linux-amd64.tar.gz | tar -xzf - -C /tmp && mv /tmp/linux-amd64/helm /tmp && \
     chmod +x /tmp/helm
-RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.154.0/helmfile_0.154.0_linux_amd64.tar.gz | tar -xzf - -C /tmp && \
+RUN curl -L https://github.com/helmfile/helmfile/releases/download/v1.1.1/helmfile_1.1.1_linux_amd64.tar.gz | tar -xzf - -C /tmp && \
     chmod +x /tmp/helmfile
-RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.34.1/yq_linux_amd64 --output /tmp/yq &&  \
+RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.45.4/yq_linux_amd64 --output /tmp/yq &&  \
     chmod +x /tmp/yq
 
 

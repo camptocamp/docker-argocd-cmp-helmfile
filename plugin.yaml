@@ -9,4 +9,4 @@ spec:
   generate:
     command: [/usr/local/bin/argocd-helmfile, generate]
   discover:
-    fileName: "helmfile.yaml"
+    fileName: "helmfile.yaml.gotmpl"
