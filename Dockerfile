@@ -19,6 +19,6 @@ COPY argocd-helmfile /usr/local/bin/
 COPY plugin.yaml /home/argocd/cmp-server/config/plugin.yaml
 
 ENV HOME="/home/argocd"
-RUN chown -R 999:999 /home/argocd
+RUN chown -R 1001:0 /home/argocd
 
-USER 999
+USER 1001
