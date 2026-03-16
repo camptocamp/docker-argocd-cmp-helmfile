@@ -50,16 +50,11 @@ if [[ "${HELMFILE_GLOBAL_OPTIONS}" ]]; then
   helmfile="${helmfile} ${HELMFILE_GLOBAL_OPTIONS}"
 fi
 
-# these should work for both v2 and v3
-helm_full_version=$(${helm} version --short --client | cut -d " " -f2)
-helm_major_version=$(echo "${helm_full_version%+*}" | cut -d "." -f1 | sed 's/[^0-9]//g')
-helm_minor_version=$(echo "${helm_full_version%+*}" | cut -d "." -f2 | sed 's/[^0-9]//g')
-
 # fix scenarios where KUBE_VERSION is improperly set with trailing +
 # https://github.com/argoproj/argo-cd/issues/8249
 KUBE_VERSION=$(echo "${KUBE_VERSION}" | sed 's/[^0-9\.]*//g')
 
-echoerr "$(${helm} version --short --client)"
+echoerr "$(${helm} version)"
 echoerr "$(${helmfile} --version)"
 
 case $phase in
@@ -77,13 +72,11 @@ case $phase in
     INTERNAL_HELM_TEMPLATE_OPTIONS=
     HELM_VALUES_FILE=
 
-    # support added for --kube-version in 3.6
-    # https://github.com/helm/helm/pull/9040
-    if [[ ${helm_major_version} -eq 3 && ${helm_minor_version} -ge 6 && "${KUBE_VERSION}" ]]; then
+    if [[ "${KUBE_VERSION}" ]]; then
       INTERNAL_HELM_TEMPLATE_OPTIONS="${INTERNAL_HELM_TEMPLATE_OPTIONS} --kube-version=${KUBE_VERSION}"
     fi
 
-    if [[ ${helm_major_version} -eq 3 && "${KUBE_API_VERSIONS}" ]]; then
+    if [[ "${KUBE_API_VERSIONS}" ]]; then
       INTERNAL_HELM_API_VERSIONS=""
       for v in ${KUBE_API_VERSIONS//,/ }; do
         INTERNAL_HELM_API_VERSIONS="${INTERNAL_HELM_API_VERSIONS} --api-versions=$v"
